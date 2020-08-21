@@ -16,7 +16,7 @@ import java.util.Scanner;
  * La Clase Ciudad.
  */
 public class Ciudad {
-//joooooooooooooooooooooorepore
+//jooooooooooooooooooooooreporenauuuu
 	/** numero avenidas. */
 	private int nAvenidas;
 
