@@ -1,0 +1,69 @@
+%Linea de comentarios. Esta ciudad es la primera
+@Calles: 7
+@Avenidas: 7
+
+%#Troncal1
+%##Distribucion1
+%###Parcela1
+%###Parcela2
+%##Distribucion2
+%###Parcela1
+%###Parcela2
+%#Troncal2
+%##Distribucion1
+%###Parcela1
+%###Parcela2
+%##Distribucion2
+%###Parcela1
+%###Parcela2
+
+#T-C6A6 150
+##D-C6A6 149
+###P-C6A5 10 10
+###P-C5A5 10 10
+###P-C5A6 10 10
+##D-C5A6 148
+###P-C4A5 10 10
+###P-C4A6 10 10
+##D-C4A6 146
+###P-C3A5 1000 10
+###P-C3A6 10 10
+##D-C3A6 145
+###P-C2A5 10 10
+###P-C1A5 10 10
+###P-C2A6 10 10
+###P-C2A5 10 10
+#T-C6A4 145
+##D-C6A4 144
+###P-C6A3 10 10
+###P-C6A4 10 10
+###P-C5A3 10 10
+###P-C5A4 10 10
+##D-C5A4 143
+###P-C4A3 10 10
+###P-C4A4 10 10
+##D-C4A4 142
+###P-C3A3 10 10
+###P-C3A4 10 10
+##D-C3A4 140
+###P-C2A3 10 10
+###P-C2A4 10 10
+###P-C1A3 10 10
+###P-C1A4 10 10
+#T-C6A2 142
+##D-C6A2 141
+###P-C6A2 10 10
+###P-C6A1 10 10
+###P-C5A2 10 10
+###P-C5A1 10 10
+##D-C5A2 141
+###P-C4A1 10 10
+###P-C4A2 10 10
+##D-C4A2 80
+###P-C3A1 10 10
+###P-C3A2 10 10
+##D-C3A2 79
+###P-C2A1 10 10
+###P-C2A2 10 10
+###P-C1A1 10 10
+###P-C1A2 10 10
