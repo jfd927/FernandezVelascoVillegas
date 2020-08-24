@@ -16,7 +16,7 @@ import java.util.Scanner;
  * La Clase Ciudad.
  */
 public class Ciudad {
-//jooooooooooooooooooooooreporenauuuu
+
 	/** numero avenidas. */
 	private int nAvenidas;
 
@@ -233,90 +233,7 @@ public class Ciudad {
 		}
 	}
 
-
-	public void algoritmo() {
-		double presion = 0;
-
-		for (int i = 0; i < this.troncal.size(); i++) {
-
-			if(presion > troncal.get(i).getPresion()) {
-				System.out.println("La presion ha decrementado en el sector: " + troncal.get(i).getNombre() + ".");
-			}
-			else {
-				System.out.println("La presion incrementa correctamente en el sector: " + troncal.get(i).getNombre() + ".");
-			}
-			System.out.println(troncal.get(i).getPresion());
-
-
-			for (int j = 0; j < troncal.get(i).getDistribucion().size(); j++) {
-				Dispositivo d = new Dispositivo(troncal.get(i).getDistribucion().get(j).getNombre(),
-						troncal.get(i).getDistribucion().get(j).getPresion());
-
-				if(presion < d.getPresion()) {
-					System.out.println("La presion ha decrementado en el sector: " + d.getNombre() + ".");
-				}
-				else {
-					System.out.println("La presion incrementa correctamente en el sector: " + d.getNombre() + ".");
-				}
-				System.out.println(d.getPresion());
-				presion = d.getPresion();
-			}
-		}
-	}
-
-	public void eficiencia() {
-		double sumaContadoresFlujo;
-		double sumaContadoresMedia;
-		System.out.println("Sin establecer los flujos:\n");
-		System.out.println(troncal);
-		System.out.println("\nEstableciendo los flujos:\n");
-		//FLUJO1 = (ERROR1+100)/100 * (FLUJO2 + sumaParcelas1)
-		//MEDIA1 = MEDIA2 + sumaParcelas2
-
-		for (int i = this.troncal.size()-1; i >= 0; i--) {
-			ArrayList<Distribucion> aux = troncal.get(i).getDistribucion();
-			for (int j = aux.size()-2; j >= 0; j--) {
-				sumaContadoresFlujo = aux.get(j).getFlujo() + aux.get(j+1).getFlujo();
-				sumaContadoresMedia = aux.get(j).getMedia() + aux.get(j+1).getMedia();
-			}
-			if(i == this.troncal.size()-1) {
-				sumaContadoresFlujo = aux.get(0).getFlujo();
-				sumaContadoresMedia = aux.get(0).getMedia();
-			}else {
-				sumaContadoresFlujo = aux.get(0).getFlujo() + this.troncal.get(i+1).getFlujo();
-				sumaContadoresMedia = aux.get(0).getMedia() + this.troncal.get(i+1).getMedia();
-			}
-
-			double flujo2 = 0;
-			double media2 = 0;
-			if(i < troncal.size() - 1) {
-				flujo2 = troncal.get(i+1).flujo;
-				media2 = troncal.get(i+1).media;
-			}
-			double flujo1 = (perdida(troncal, 0, troncal.size() - 1) + 100) / 100.0 * sumaContadoresFlujo;
-			double media1 = media2 + sumaContadoresMedia;
-			troncal.get(i).flujo = flujo1;
-			troncal.get(i).media = media1;
-
-		}
-
-		System.out.println(troncal);
-	}
-
-	public double perdida(ArrayList<Troncal> lista, int inicio, int fin) {
-		Troncal t = lista.get(inicio);
-
-		if(fin == lista.size()) {
-			return t.flujo / t.media;
-		}
-		else {
-			Troncal t2 = lista.get(fin);
-			return (t.flujo - t2.flujo) / (t2.media - t2.media);
-		}
-
-	}
-
-
+	//ALGORITMOS
 
 	/**
 	 * Divide Y venceras presiones.
@@ -502,6 +419,8 @@ public class Ciudad {
 				}
 		return suma;
 	}
+
+
 
 	/**
 	 * Ver ciudad.
