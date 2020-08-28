@@ -9,7 +9,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -18,16 +21,19 @@ import java.util.Scanner;
 public class Ciudad {
 
 	/** numero avenidas. */
-	private int nAvenidas;
+	private static int nAvenidas;
 
 	/** numero calles. */
-	private int nCalles;
+	private static int nCalles;
 
 	/** El troncal. */
-	private ArrayList<Troncal> troncal;
+	private static ArrayList<Troncal> troncal;
 
 	/** La presion maxima. */
 	private int pMax = 150;
+
+	public static double BA = 60;
+	private static List<Cliente> lista;
 
 	/**
 	 * Instancia una nueva Ciudad.
@@ -208,28 +214,93 @@ public class Ciudad {
 
 	}
 
+	public void cargarClientes(String archivo) {
+		lista = new ArrayList<Cliente>();
+		try {
+			Scanner sc = new Scanner(new File(archivo));
+			while (sc.hasNextLine()) {
+				String linea = sc.nextLine().trim();
+				if(linea.isEmpty() || linea.startsWith("//")) continue;
+				String[] tokens = linea.split(" >-");
+				String nombre = tokens[0];
+				double flujo = Double.parseDouble(tokens[1]);
+				double ip = Double.parseDouble(tokens[2]);
+				Cliente c = new Cliente(nombre, flujo, ip);
+				lista.add(c);
+			}
+		} catch (FileNotFoundException e) {
+			System.out.println("Error en la carga del archivo");
+		}
+	}
+
+	public static int indiceAvenida(int j) {
+		return (j+1)*2 + (nAvenidas%2 == 0 ? -1 : 0);
+	}
+
+	public static int indiceCalle(int i) {
+		return nCalles - (i < 0 ? 1 : i);
+	}
+
+	public static String indicesANombre(int i, int j) {
+		return (i < 0 ? "T" : "D") + "-C" + indiceCalle(i) + "A" + indiceAvenida(j);
+	}
+
+	public static double funcionPresion(int x, int b) {
+		return -0.05*x + b;
+	}
+
+	public static double funcionPresion2(int i, int j) {
+		if(i < 0) {
+			return funcionPresion(nAvenidas - 1 -j, 150);
+		}else {
+			return funcionPresion(i+1, (int) troncal.get(i).getPresion());
+		}
+	}
 
 	public void generarArchivo(String ruta) {
 
-		File f = new File(ruta);
+		ArrayList<Troncal> t = new ArrayList<Troncal>();
+		Map<String, TreeMap<String, Double>> mapa= new TreeMap<String, TreeMap<String, Double>>();
+		for (int j = 0; j < nAvenidas/2; j++) {
+			t.add(new Troncal(indicesANombre(-1, j), 0));
+		}
 
-		try {
-		PrintWriter pw = new PrintWriter(f);
-		pw.println("@Avenidas: " + nCalles);
-		pw.println("@Calles: " + nAvenidas);
-		pw.println();
-		for (int i = 0; i < troncal.size(); i++) {
-			pw.println("#" + troncal.get(i).getNombre());
-			for (Distribucion d : troncal.get(i).getDistribucion()) {
-				pw.println("##" + d.getNombre() + " " + d.getPresion());
-				for(Parcela p : d.getParcelas()){
-					pw.println("###" + d.getNombre() + " " + p.getFlujo() + " " + p.getMedia());
-				}
+		for (int j = t.size() - 1; j >= 0; j--) {
+			double pAnterior = funcionPresion2(-1, j+1);
+			double caida = 0;
+			if(mapa.get("P").containsKey(indicesANombre(-1, j))) {
+				caida = mapa.get("P").get(indicesANombre(-1, j))/100;
+			}else {
+				double pActual = funcionPresion2(-1, j);
+				caida = (pAnterior - pActual) / pActual;
+			}
+
+			if(j+1 == t.size()) {
+				t.get(j).setPresion(funcionPresion(-1, j));
+			}else {
+				t.get(j).setPresion(pAnterior / (caida + 1));
 			}
 		}
-		pw.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("Ocurrió un error en la escritura del archivo");
+
+		for (int j = 0; j < t.size(); j++) {
+			for (int i = 0; i < nCalles-3; i++) {
+				double caida = 0;
+				double pAnterior = 0;
+				if(mapa.get("P").containsKey(indicesANombre(i, j))) {
+					caida = mapa.get("P").get(indicesANombre(i, j));
+				}else {
+
+					if(i == 0) {
+						pAnterior = t.get(j).getPresion();
+					}else {
+						pAnterior = funcionPresion2(i-1, j);
+					}
+					double pActual = funcionPresion2(i, j);
+					caida = (pAnterior - pActual)/ pActual;
+				}
+				Distribucion d = new Distribucion(indicesANombre(i, j), pAnterior/(caida+1));
+				t.get(j).addDistribucion(d);
+			}
 		}
 	}
 
@@ -260,7 +331,8 @@ public class Ciudad {
 		int finH = pos == -1 ? fin : pos;
 		int finV = pos == -1 ? 0 : fin;
 		if(fin - inicio == 1) {
-			System.out.println(troncal.get(inicioH).getDistribucion().get(inicioV).getNombre() + " - " + troncal.get(finH).getDistribucion().get(finV).getNombre());
+			System.out.println(troncal.get(inicioH).getDistribucion().get(inicioV).getNombre() + " - " + troncal.get(finH).getDistribucion().get(finV).getNombre()
+					+ " - > " + verificarPresion(troncal.get(inicioH).getDistribucion().get(inicioV), troncal.get(finH).getDistribucion().get(finV))*100);
 		}else {
 			int mitad = (inicio + fin) / 2;
 			int mitadH = pos == -1 ? mitad : pos;
@@ -315,7 +387,7 @@ public class Ciudad {
 	private void analizarConsumidores(int posH, int posV) {
 		for(Parcela p : troncal.get(posH).getDistribucion().get(posV).getParcelas()) {
 			if(verificarFlujo(p) >= 7.0) {
-				System.out.println(p.getNombre());
+				System.out.println(p.getNombre() + " - " + p.getFlujo() +" - > " + (verificarFlujo(p)*100));
 			}
 		}
 
@@ -348,7 +420,8 @@ public class Ciudad {
 			int prevV = pos == -1 ? 0 : x-1;
 			d3 = troncal.get(prevH).getDistribucion().get(prevV);
 			if(verificarPresion(d3, d2) >= 0.1) {
-				System.out.println(d3.getNombre() + " - " + d2.getNombre());
+				System.out.println(d3.getNombre() + " - " + d2.getNombre() + " - > "
+						+ verificarPresion(d3, d2)*100);
 			}
 			d2 = d3;
 			x = pos == -1 ? x+1 : x-1;
@@ -371,7 +444,7 @@ public class Ciudad {
 
 		for (Parcela p : aux) {
 			if(verificarFlujo(p) >= 7) {
-				System.out.println(p.getNombre());
+				System.out.println(p.getNombre() + " - " + p.getFlujo() + " - > " + (verificarFlujo(p)*100));
 			}else {
 				break;
 			}
@@ -399,7 +472,9 @@ public class Ciudad {
 				if(pos == -1) {
 					System.out.println(troncal.get(i).getDistribucion().get(0).getNombre());
 				}else {
-					System.out.println(troncal.get(pos).getDistribucion().get(i).getNombre());
+					System.out.println(troncal.get(pos).getDistribucion().get(i).getNombre()
+							+ " - "+ troncal.get(pos).getDistribucion().get(i+1).getNombre()
+							+ " - > " + variacionFlujo(miFlujo, parcelas, siguiente)*100);
 				}
 			}
 		}
@@ -417,6 +492,86 @@ public class Ciudad {
 				for(Parcela p : troncal.get(posH).getDistribucion().get(posV).getParcelas()) {
 					suma += p.getFlujo();
 				}
+		return suma;
+	}
+
+	public void progDinamicaWTT(int WTT) {
+		lista.sort(new OrdenarCliente(false));
+		int mcd = mcd(WTT, false);
+		int[][] tabla = new int[lista.size()+1][WTT/mcd+1];
+		for (int i = 1; i < tabla.length; i++) {
+			for (int j = 1; j < tabla[0].length && j < lista.get(i-1).getAt()/mcd; j++) {
+				tabla[i][j] = tabla[i-1][j];
+			}
+			for (int j = lista.get(i-1).getAt()/mcd; j < tabla[0].length; j++) {
+				tabla[i][j] = Math.max(tabla[i-1][j], lista.get(i-1).getOp()+tabla[i-1][j-lista.get(i-1).getAt()/mcd]);
+			}
+		}
+
+		int i = tabla.length-1;
+		int j = tabla[0].length-1;
+		while (i!=0 && j!=0) {
+			if(tabla[i][j] != tabla[i-1][j]) {
+				System.out.println(lista.get(i-1));
+				j -= lista.get(i-1).getAt()/mcd;
+			}
+			i--;
+		}
+	}
+
+	private static int mcd(int peso, boolean tipoPeso) {
+		int x = mcd(peso, tipoPeso ? lista.get(0).getOp() : lista.get(0).getAt());
+		for (int i = 1; i < lista.size() && x != 1; i++) {
+			x = mcd(x, tipoPeso ? lista.get(i).getOp() : lista.get(i).getAt());
+		}
+		return x;
+	}
+
+	private static int mcd(int a, int b) {
+	    while (b != 0) {
+	        int temporal = b;
+	        b = a % b;
+	        a = temporal;
+	    }
+	    return a;
+	}
+
+	public void progDinamicaMI(int MI) {
+		lista.sort(new OrdenarCliente(true));
+		int nuevaMochila = sumarPeso(lista) - MI;
+		if(nuevaMochila < 0) {
+			System.out.println("No hay más soluciones");
+			return;
+		}
+		int mcd = mcd(nuevaMochila, true);
+		int[][] tabla = new int[lista.size()+1][nuevaMochila/mcd+1];
+
+		for(int i = 1; i < tabla.length; i++) {
+			for(int j = 1; j < tabla[0].length && j < lista.get(i-1).getAt()/mcd; j++) {
+				tabla[i][j] = tabla[i-1][j];
+			}
+			for(int j = lista.get(i-1).getOp()/mcd; j < tabla[0].length; j++) {
+				tabla[i][j] = Math.max(tabla[i-1][j], lista.get(i-1).getAt()+tabla[i-1][j-lista.get(i-1).getOp()/mcd]);
+			}
+		}
+
+		int i = tabla.length-1;
+		int j = tabla[0].length-1;
+		while(i!= 0 && j!=0) {
+			if(tabla[i][j] != tabla[i-1][j]) {
+				j -= lista.get(i-1).getOp()/mcd;
+			}else {
+				System.out.println(lista.get(i-1));
+			}
+			i--;
+		}
+	}
+
+	private int sumarPeso(List<Cliente> lista) {
+		int suma = 0;
+		for(Cliente c : lista) {
+			suma += c.getOp();
+		}
 		return suma;
 	}
 

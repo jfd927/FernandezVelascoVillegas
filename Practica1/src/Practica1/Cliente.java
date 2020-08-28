@@ -52,7 +52,7 @@ public class Cliente {
 	}
 
 	public int getAt() {
-		return  (int) (Main.BA + 5*bc/1000000000 + 12*((ip/100)-7));
+		return  (int) (Ciudad.BA + 5*bc/1000000000 + 12*((ip/100)-7));
 
 	}
 

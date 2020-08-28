@@ -16,8 +16,7 @@ public class Main {
 	/** The ciudad. */
 	private static Ciudad ciudad;
 
-	public static double BA = 60;
-	private static List<Cliente> lista;
+
 
 	/** The ruta. */
 	private static String ruta = System.getProperty("user.dir")+File.separator
@@ -35,7 +34,7 @@ public class Main {
 		inicializarEstructuras();
 		do {
 			menu();
-			int opcionesMenu = leerOpciones("Introduzca una opcion: ", 1, 13);
+			int opcionesMenu = leerOpciones("Introduzca una opcion: ", 1, 9);
 			ejecutarOpcion(opcionesMenu);
 
 		} while (true);
@@ -110,27 +109,15 @@ public class Main {
 			tiemposEjecucion();
 			break;
 		case 6:
-			cargarCliente();
+			progDinWTT();
 			break;
 		case 7:
-			progDinamicaWTT(4800);
+			progDinMI();
 			break;
 		case 8:
-			DyVPresion();
+			ejecutarTiempos2();
 			break;
 		case 9:
-			DYVFlujos();
-			break;
-		case 10:
-			GreedyPresiones();
-			break;
-		case 11:
-			GreedyFlujos();
-			break;
-		case 12:
-			GreedyPerdidas();
-			break;
-		case 13:
 			System.exit(0);
 			break;
 
@@ -151,18 +138,13 @@ public class Main {
 		System.out.println("3. Ver datos de la ciudad a partir de un archivo.");
 		System.out.println("4. Ejecutar todos los algoritmos para un archivo de ciudad.");
 		System.out.println("5. Visualizar tiempos de ejecución de los algoritmos.");
-		System.out.println("6. Cargar cliente.");
-		System.out.println("7. Algoritmo de programación dinámica para WTT");
+		System.out.println("6. Algoritmo de programación dinámica para WTT");
+		System.out.println("7. Algoritmo de programación dinámica para MI");
+		System.out.println("8. Visualizar tiempos de ejecución de los algoritmos de prog. dinámica.");
 		System.out.println("------------------------------------------------------------------");
-		System.out.println("Ejecución de los algoritmos por separado:");
-		System.out.println("8. DyV para detectar pérdida de presiones");
-		System.out.println("9. DyV para detectar flujos superiores al 700%");
-		System.out.println("10. Greedy para detectar pérdida de presiones");
-		System.out.println("11. Greedy para detectar flujos superiores al 700%");
-		System.out.println("12. Greedy para detectar flujos superiores al 500% (alg. pérdidas)");
-		System.out.println("------------------------------------------------------------------");
-		System.out.println("13, Salir");
+		System.out.println("9. Salir");
 		System.out.println("------------------------------------------------------------------\n");
+
 
 	}
 
@@ -191,9 +173,6 @@ public class Main {
 	}
 
 
-
-
-
 	private static void MenuGenerarArchivo() {
 
 		Scanner sc = new Scanner(System.in);
@@ -204,8 +183,7 @@ public class Main {
 		System.out.println("Introduzca el número de avenidas: ");
 		int nAvenidas = Integer.parseInt(sc.nextLine());
 		String nombreCompleto = nombre + ".txt";
-		Ciudad c = new Ciudad(nCalles, nAvenidas, 150);
-		c.generarArchivo(ruta + nombreCompleto);
+		ciudad.generarArchivo(ruta + nombreCompleto);
 //		c = new Ciudad(ruta + nombreCompleto);
 //		System.out.println(c);
 
@@ -270,18 +248,20 @@ public class Main {
 		}
 		long endGreedyPerdida = System.nanoTime();
 
+
+
 		System.out.println("--------------------------------------------------------------------------------");
 		System.out.println("-----------------------------------RESULTADOS-----------------------------------");
 		System.out.println("--------------------------------------------------------------------------------");
 		System.out.println("\nA continuación los tiempos de ejecución del DYV de presiones (nanosegundos):");
 		System.out.println((endDyvPresiones-startDyvPresiones)/10);
-		System.out.println("\nA continuación la solución del DYV de flujos (nanosegundos):");
+		System.out.println("\nA continuación los tiempos de ejecución del DYV de flujos (nanosegundos):");
 		System.out.println((endDyvFlujos-startDyvFlujos)/10);
-		System.out.println("\nA continuación la solución del Greedy de presiones (nanosegundos):---------------");
+		System.out.println("\nA continuación los tiempos de ejecución del Greedy de presiones (nanosegundos):");
 		System.out.println((endGreedyPresion-startGreedyPresion)/10);
-		System.out.println("\nA continuación la solución del Greedy de flujos (nanosegundos):");
+		System.out.println("\nA continuación los tiempos de ejecución del Greedy de flujos (nanosegundos):");
 		System.out.println((endGreedyFlujo-startGreedyFlujo)/10);
-		System.out.println("\nA continuación la solución del Greedy de perdidas (nanosegundos):---------------");
+		System.out.println("\nA continuación los tiempos de ejecución del Greedy de pérdidas (nanosegundos):");
 		System.out.println((endGreedyPerdida-startGreedyPerdida)/10);
 		System.out.println("--------------------------------------------------------------------------------");
 		System.out.println("--------------------------------------------------------------------------------\n");
@@ -289,140 +269,67 @@ public class Main {
 
 	}
 
-	private static void cargarCliente(){
-
+	private static void progDinWTT(){
 		String archivo = menuCargarArchivo();
-		cargarClientes(archivo);
-
-		System.out.println(lista);
+		ciudad.cargarClientes(archivo);
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Introduzca un valor de WTT:");
+		int WTT = Integer.parseInt(sc.nextLine());
+		System.out.println("\n A continuación el resultado de programación dinámica para WTT:");
+		ciudad.cargarClientes(archivo);
+		ciudad.progDinamicaWTT(WTT);
 	}
 
-	private static void progDinamicaWTT(int WTT) {
-		lista.sort(new OrdenarCliente(false));
-		int mcd = mcd(WTT, false);
-		int[][] tabla = new int[lista.size()+1][WTT+1];
-		for (int i = 1; i < tabla.length; i++) {
-			for (int j = 1; j < tabla.length && j < lista.get(i-1).getAt(); j++) {
-				tabla[i][j] = tabla[i-1][j];
-			}
-			for (int j = lista.get(i-1).getAt(); j < tabla[0].length; j++) {
-				tabla[i][j] = Math.max(tabla[i-1][j], lista.get(i-1).getOp()+tabla[i-1][j-lista.get(i-1).getAt()]);
-			}
-		}
-
-		int i = tabla.length-1;
-		int j = tabla[0].length-1;
-		while (i!=0 && j!=0) {
-			if(tabla[i][j] != tabla[i-1][j]) {
-				System.out.println(lista.get(i-1));
-				j -= lista.get(i-1).getAt();
-			}
-			i--;
-		}
-	}
-
-	private static int mcd(int peso, boolean tipoPeso) {
-		int x = mcd(peso, tipoPeso ? lista.get(0).getOp() : lista.get(0).getAt());
-		for (int i = 1; i < lista.size() && x != 1; i++) {
-			x = mcd(x, tipoPeso ? lista.get(i).getOp() : lista.get(i).getAt());
-		}
-		return x;
-	}
-
-	private static int mcd(int a, int b) {
-	    while (b != 0) {
-	        int temporal = b;
-	        b = a % b;
-	        a = temporal;
-	    }
-	    return a;
-	}
-
-	private static void cargarClientes(String archivo) {
-		lista = new ArrayList<Cliente>();
-		try {
-			Scanner sc = new Scanner(new File(archivo));
-			while (sc.hasNextLine()) {
-				String linea = sc.nextLine().trim();
-				if(linea.isEmpty() || linea.startsWith("//")) continue;
-				String[] tokens = linea.split("[ >-]+");
-				String nombre = tokens[0];
-				double flujo = Double.parseDouble(tokens[1]);
-				double ip = Double.parseDouble(tokens[2]);
-				Cliente c = new Cliente(nombre, flujo, ip);
-				lista.add(c);
-			}
-		} catch (FileNotFoundException e) {
-			System.out.println("Error en la carga del archivo");
-		}
-
-	}
-
-
-	private static void DyVPresion() {
+	private static void progDinMI(){
 		String archivo = menuCargarArchivo();
-		try {
-			ciudad.cargarArchivo(archivo);
-
-		} catch (FileNotFoundException e) {
-			System.out.println("No es posible cargar el archivo");
-		}
-
-		System.out.println("\nA continuación la solución del DYV de presiones (se indica donde se encuentran las pérdidas):\n");
-		ciudad.DivideYVencerasPresiones();
-
+		ciudad.cargarClientes(archivo);;
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Introduzca un valor de MI:");
+		int MI = Integer.parseInt(sc.nextLine());
+		System.out.println("\n A continuación el resultado de programación dinámica para MI:");
+		ciudad.cargarClientes(archivo);
+		ciudad.progDinamicaMI(MI);
 	}
 
-	private static void DYVFlujos() {
+	private static void ejecutarTiempos2() {
 		String archivo = menuCargarArchivo();
-		try {
-			ciudad.cargarArchivo(archivo);
+		ciudad.cargarClientes(archivo);
 
-		} catch (FileNotFoundException e) {
-			System.out.println("No es posible cargar el archivo");
+		Scanner sc = new Scanner(System.in);
+
+		System.out.println("Introduzca un valor de WTT:");
+		int WTT = Integer.parseInt(sc.nextLine());
+
+		System.out.println("Introduzca un valor de MI:");
+		int MI = Integer.parseInt(sc.nextLine());
+
+
+
+
+		long startDinWTT = System.nanoTime();
+		for (int i = 0; i < 10; i++) {
+			ciudad.progDinamicaWTT(WTT);
 		}
-		System.out.println("\nA continuación la solución del DYV de flujos (se indican consumos superiores):\n");
-		ciudad.DivideYVencerasFlujos();
-	}
+		long endDinWTT = System.nanoTime();
 
-	private static void GreedyPresiones(){
-		String archivo = menuCargarArchivo();
-		try {
-			ciudad.cargarArchivo(archivo);
-
-		} catch (FileNotFoundException e) {
-			System.out.println("No es posible cargar el archivo");
+		long startDinMI = System.nanoTime();
+		for (int i = 0; i < 10; i++) {
+			ciudad.progDinamicaWTT(MI);
 		}
-		System.out.println("\nA continuación la solución del Greedy de presiones (se indica donde se encuentran las pérdidas):\n");
-		ciudad.greedyPresion();
+		long endDinMI = System.nanoTime();
+
+
+
+		System.out.println("--------------------------------------------------------------------------------");
+		System.out.println("-----------------------------------RESULTADOS-----------------------------------");
+		System.out.println("--------------------------------------------------------------------------------");
+		System.out.println("\nA continuación los tiempos de ejecución de prog. dinámica para WTT (nanosegundos):");
+		System.out.println((endDinWTT-startDinWTT)/10);
+		System.out.println("\nA continuación los tiempos de ejecución de prog. dinámica para MI (nanosegundos):");
+		System.out.println((endDinMI-startDinMI)/10);
+		System.out.println("--------------------------------------------------------------------------------");
+		System.out.println("--------------------------------------------------------------------------------\n");
 	}
-
-	private static void GreedyFlujos() {
-		String archivo = menuCargarArchivo();
-		try {
-			ciudad.cargarArchivo(archivo);
-
-		} catch (FileNotFoundException e) {
-			System.out.println("No es posible cargar el archivo");
-		}
-		System.out.println("\nA continuación la solución del Greedy de flujos (se indican consumos superiores al 700%):\n");
-		ciudad.greedyFlujos();
-
-	}
-
-	private static void GreedyPerdidas() {
-		String archivo = menuCargarArchivo();
-		try {
-			ciudad.cargarArchivo(archivo);
-
-		} catch (FileNotFoundException e) {
-			System.out.println("No es posible cargar el archivo");
-		}
-		System.out.println("\nA continuación la solución del Greedy de flujos (se indican consumos superiores al 500%):\n");
-		ciudad.greedyPerdidas();
-
-	}
-
 
 
 	/**
