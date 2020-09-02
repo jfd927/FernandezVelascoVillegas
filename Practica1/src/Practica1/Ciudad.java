@@ -487,7 +487,23 @@ public class Ciudad {
 		return p;
 	}
 
-	//ALGORITMOS
+	/**
+	 * Ver ciudad.
+	 */
+	public void verCiudad() {
+		for (int i = 0; i < this.troncal.size(); i++) {
+			System.out.println(troncal.get(i));
+			for (Distribucion d : troncal.get(i).getDistribucion()) {
+				System.out.println(d);
+				for(Parcela p : d.getParcelas()) {
+				System.out.println(p);
+
+				}
+			}
+		}
+	}
+
+	//ALGORITMOS----------------------------------------------
 
 	/**
 	 * Divide Y venceras presiones.
@@ -850,21 +866,7 @@ public class Ciudad {
 
 
 
-	/**
-	 * Ver ciudad.
-	 */
-	public void verCiudad() {
-		for (int i = 0; i < this.troncal.size(); i++) {
-			System.out.println(troncal.get(i));
-			for (Distribucion d : troncal.get(i).getDistribucion()) {
-				System.out.println(d);
-				for(Parcela p : d.getParcelas()) {
-				System.out.println(p);
 
-				}
-			}
-		}
-	}
 
 
 

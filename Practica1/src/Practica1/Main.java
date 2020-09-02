@@ -259,7 +259,7 @@ public class Main {
 		ciudad.greedyPresion();
 		System.out.println("\nA continuación la solución del Greedy de flujos (se indican consumos superiores al 700%):");
 		ciudad.greedyFlujos();
-		System.out.println("\nA continuación la solución del Greedy de flujos (se indican consumos superiores al 500%):");
+		System.out.println("\nA continuación la solución del Greedy de flujos (se indican consumos superiores al 500%) Alg pérdidas en la red a2/:");
 		ciudad.greedyPerdidas();
 		System.out.println();
 	}
@@ -335,10 +335,15 @@ public class Main {
 		ciudad.cargarClientes(archivo);
 		Scanner sc = new Scanner(System.in);
 		System.out.println("Introduzca un valor de WTT:");
-		int WTT = Integer.parseInt(sc.nextLine());
-		System.out.println("\n A continuación el resultado de programación dinámica para WTT:");
-		ciudad.cargarClientes(archivo);
-		ciudad.progDinamicaWTT(WTT);
+		String WTTSTring = sc.nextLine();
+		try {
+			int WTT = Integer.parseInt(WTTSTring);
+			System.out.println("\n A continuación el resultado de programación dinámica para WTT:");
+			ciudad.cargarClientes(archivo);
+			ciudad.progDinamicaWTT(WTT);
+		} catch (NumberFormatException e) {
+			System.out.println("Error, no es un valor permitido.");
+		}
 	}
 
 	/**
@@ -349,10 +354,16 @@ public class Main {
 		ciudad.cargarClientes(archivo);;
 		Scanner sc = new Scanner(System.in);
 		System.out.println("Introduzca un valor de MI:");
-		int MI = Integer.parseInt(sc.nextLine());
-		System.out.println("\n A continuación el resultado de programación dinámica para MI:");
-		ciudad.cargarClientes(archivo);
-		ciudad.progDinamicaMI(MI);
+		String MIString = sc.nextLine();
+		try {
+			int MI = Integer.parseInt(MIString);
+			System.out.println("\n A continuación el resultado de programación dinámica para MI:");
+			ciudad.cargarClientes(archivo);
+			ciudad.progDinamicaMI(MI);
+		} catch (NumberFormatException e) {
+			System.out.println("Error, no es un valor permitido.");
+		}
+
 	}
 
 	/**
@@ -365,37 +376,52 @@ public class Main {
 		Scanner sc = new Scanner(System.in);
 
 		System.out.println("Introduzca un valor de WTT:");
-		int WTT = Integer.parseInt(sc.nextLine());
-
+		String WTTString = sc.nextLine();
 		System.out.println("Introduzca un valor de MI:");
-		int MI = Integer.parseInt(sc.nextLine());
+		String MIString = sc.nextLine();
+		try {
+			int WTT = Integer.parseInt(WTTString);
+			int MI = Integer.parseInt(MIString);
+
+			System.out.println("\n A continuación el resultado de programación dinámica para MI:");
+
+			long startDinWTT = System.nanoTime();
+			for (int i = 0; i < 10; i++) {
+				ciudad.progDinamicaWTT(WTT);
+			}
+			long endDinWTT = System.nanoTime();
 
 
+			System.out.println("\n A continuación el resultado de programación dinámica para MI:");
+
+			long startDinMI = System.nanoTime();
+			for (int i = 0; i < 10; i++) {
+				ciudad.progDinamicaMI(MI);
+			}
+			long endDinMI = System.nanoTime();
 
 
-		long startDinWTT = System.nanoTime();
-		for (int i = 0; i < 10; i++) {
-			ciudad.progDinamicaWTT(WTT);
+			System.out.println("--------------------------------------------------------------------------------");
+			System.out.println("-----------------------------------RESULTADOS-----------------------------------");
+			System.out.println("--------------------------------------------------------------------------------");
+			System.out.println("\nA continuación los tiempos de ejecución de prog. dinámica para WTT (nanosegundos):");
+			System.out.println((endDinWTT-startDinWTT)/10);
+			System.out.println("\nA continuación los tiempos de ejecución de prog. dinámica para MI (nanosegundos):");
+			System.out.println((endDinMI-startDinMI)/10);
+			System.out.println("--------------------------------------------------------------------------------");
+			System.out.println("--------------------------------------------------------------------------------\n");
+
+		} catch (NumberFormatException e) {
+			System.out.println("Error, no es un valor permitido.");
 		}
-		long endDinWTT = System.nanoTime();
 
-		long startDinMI = System.nanoTime();
-		for (int i = 0; i < 10; i++) {
-			ciudad.progDinamicaWTT(MI);
+
+		try {
+
+		} catch (NumberFormatException e) {
+			System.out.println("Error, no es un valor permitido.");
 		}
-		long endDinMI = System.nanoTime();
 
-
-
-		System.out.println("--------------------------------------------------------------------------------");
-		System.out.println("-----------------------------------RESULTADOS-----------------------------------");
-		System.out.println("--------------------------------------------------------------------------------");
-		System.out.println("\nA continuación los tiempos de ejecución de prog. dinámica para WTT (nanosegundos):");
-		System.out.println((endDinWTT-startDinWTT)/10);
-		System.out.println("\nA continuación los tiempos de ejecución de prog. dinámica para MI (nanosegundos):");
-		System.out.println((endDinMI-startDinMI)/10);
-		System.out.println("--------------------------------------------------------------------------------");
-		System.out.println("--------------------------------------------------------------------------------\n");
 	}
 
 
