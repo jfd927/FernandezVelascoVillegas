@@ -1,5 +1,8 @@
 package Practica1;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class Dispositivo.
@@ -25,10 +28,22 @@ public class Dispositivo {
 	 * @param presion the presion
 	 */
 	public Dispositivo(String nombre, double presion) {
+		this(nombre, presion, 0, 0);
+	}
+
+	/**
+	 * Instantiates a new dispositivo.
+	 *
+	 * @param nombre the nombre
+	 * @param presion the presion
+	 * @param flujo the flujo
+	 * @param media the media
+	 */
+	public Dispositivo(String nombre, double presion, double flujo, double media) {
 		this.nombre = nombre;
 		this.presion = presion;
-		this.flujo = 0;
-		this.media = 0;
+		this.flujo = flujo;
+		this.media = media;
 	}
 
 	/**
@@ -101,6 +116,18 @@ public class Dispositivo {
 	 */
 	public void setMedia(double media) {
 		this.media = media;
+	}
+
+	/**
+	 * Sumar flujo.
+	 *
+	 * @param otro the otro
+	 * @param fallos the fallos
+	 */
+	public void sumarFlujo(Dispositivo otro, Map<String, TreeMap<String, Double>> fallos) {
+		this.media += otro.media;
+		Double fallo = fallos.get("R").get(nombre);
+		this.flujo += otro.flujo*(1 + (fallo == null ? 0 : fallo/100.0));
 	}
 
 	/* (non-Javadoc)

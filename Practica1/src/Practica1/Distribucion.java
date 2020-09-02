@@ -18,7 +18,19 @@ public class Distribucion extends Dispositivo{
 	 * @param presion the presion
 	 */
 	public Distribucion(String nombre, double presion) {
-		super(nombre, presion);
+		this(nombre, presion, 0, 0);
+	}
+
+	/**
+	 * Instantiates a new distribucion.
+	 *
+	 * @param nombre the nombre
+	 * @param presion the presion
+	 * @param flujo the flujo
+	 * @param media the media
+	 */
+	public Distribucion(String nombre, double presion, double flujo, double media) {
+		super(nombre, presion, flujo, media);
 		this.parcelas = new ArrayList<Parcela>();
 	}
 

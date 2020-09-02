@@ -90,6 +90,9 @@ public class Parcela implements Comparable<Parcela>{
 		return this.nombre+" Flujo: "+this.flujo+", Media: "+this.media;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compareTo(Parcela o) {
 		double var1 = (this.flujo - this.media) / this.media;

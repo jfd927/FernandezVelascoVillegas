@@ -18,7 +18,19 @@ public class Troncal extends Dispositivo{
 	 * @param presion the presion
 	 */
 	public Troncal(String nombre, double presion) {
-		super(nombre, presion);
+		this(nombre, presion, 0, 0);
+	}
+
+	/**
+	 * Instantiates a new troncal.
+	 *
+	 * @param nombre the nombre
+	 * @param presion the presion
+	 * @param flujo the flujo
+	 * @param media the media
+	 */
+	public Troncal(String nombre, double presion, double flujo, double media) {
+		super(nombre, presion, flujo, media);
 		this.distribucion = new ArrayList<Distribucion>();
 	}
 

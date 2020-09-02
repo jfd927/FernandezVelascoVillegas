@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -161,6 +163,9 @@ public class Main {
 		System.out.println("\nEl archivo ha sido cargado correctamente.\n");
 	}
 
+	/**
+	 * Ver datos ciudad.
+	 */
 	private static void verDatosCiudad() {
 		String archivo = menuCargarArchivo();
 		try {
@@ -173,22 +178,72 @@ public class Main {
 	}
 
 
+
+	/**
+	 * Menu generar archivo.
+	 */
 	private static void MenuGenerarArchivo() {
 
 		Scanner sc = new Scanner(System.in);
 		System.out.println("Introduzca el nombre del archivo: ");
 		String nombre = sc.nextLine();
 		System.out.println("Introduzca el número de calles: ");
-		int nCalles = Integer.parseInt(sc.nextLine());
+		String nCalles = sc.nextLine();
 		System.out.println("Introduzca el número de avenidas: ");
-		int nAvenidas = Integer.parseInt(sc.nextLine());
+		String nAvenidas = sc.nextLine();
+		int numeroCalles = 0;
+		int numeroAvenidas = 0;
+		try {
+			numeroCalles = Integer.parseInt(nCalles);
+			numeroAvenidas = Integer.parseInt(nAvenidas);
+		} catch (NumberFormatException e) {
+			System.out.println("Error, no es un valor permitido.");
+		}
 		String nombreCompleto = nombre + ".txt";
-		ciudad.generarArchivo(ruta + nombreCompleto);
+		///Preguntar al usuario si quiere introducir fallos
+		System.out.println("¿Quiere introducir fallos?");
+		System.out.println("1. Si\n2. No");
+		String f = sc.nextLine();
+		try {
+			int fa = Integer.parseInt(f);
+			if(fa < 1 || fa > 2) {
+				System.out.println("Error, debe ser un numero entre "+ 1 +" y "+ 2);
+			}else {
+				if(fa == 1) {
+					System.out.println("**Ejemplo fallo: P-C1A1; P indica Parcela, D indica distribución, T indica troncal; C indica calle; A indica avenida;");
+					System.out.println("Introduzca el fallo: ");
+					String fallo = sc.nextLine();
+					System.out.println("Introduce el porcentaje de fallo: ");
+					String porcentajeFallo = sc.nextLine();
+					int pFallo = 0;
+					try {
+						pFallo = Integer.parseInt(porcentajeFallo);
+					} catch (NumberFormatException e) {
+						System.out.println("Error, no es un valor permitido.");
+					}
+					ciudad.iniciarMapaFallos();
+					////Introducir fallos por parte del usuario
+					ciudad.falloPresion(fallo, pFallo);
+					ciudad.generarArchivo(ruta + nombreCompleto, numeroCalles, numeroAvenidas);
+				}
+				ciudad.falloPresion("", 0);
+				ciudad.generarArchivo(ruta + nombreCompleto, numeroCalles, numeroAvenidas);
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("Error, no es un valor permitido");
+		}
+
+
+
+
 //		c = new Ciudad(ruta + nombreCompleto);
 //		System.out.println(c);
 
 	}
 
+	/**
+	 * Ejecutar algoritmos.
+	 */
 	private static void ejecutarAlgoritmos(){
 		String archivo = menuCargarArchivo();
 		try {
@@ -209,6 +264,9 @@ public class Main {
 		System.out.println();
 	}
 
+	/**
+	 * Tiempos ejecucion.
+	 */
 	private static void tiemposEjecucion(){
 		String archivo = menuCargarArchivo();
 		try {
@@ -269,6 +327,9 @@ public class Main {
 
 	}
 
+	/**
+	 * Prog din WTT.
+	 */
 	private static void progDinWTT(){
 		String archivo = menuCargarArchivo();
 		ciudad.cargarClientes(archivo);
@@ -280,6 +341,9 @@ public class Main {
 		ciudad.progDinamicaWTT(WTT);
 	}
 
+	/**
+	 * Prog din MI.
+	 */
 	private static void progDinMI(){
 		String archivo = menuCargarArchivo();
 		ciudad.cargarClientes(archivo);;
@@ -291,6 +355,9 @@ public class Main {
 		ciudad.progDinamicaMI(MI);
 	}
 
+	/**
+	 * Ejecutar tiempos 2.
+	 */
 	private static void ejecutarTiempos2() {
 		String archivo = menuCargarArchivo();
 		ciudad.cargarClientes(archivo);

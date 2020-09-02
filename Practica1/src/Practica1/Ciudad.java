@@ -30,15 +30,24 @@ public class Ciudad {
 	private static ArrayList<Troncal> troncal;
 
 	/** La presion maxima. */
-	private int pMax = 150;
+	private double pMax = 150.0;
 
+	/** The fallos. */
+	private static TreeMap<String, TreeMap<String,Double>> fallos = new TreeMap<String, TreeMap<String,Double>>();
+
+	/** The t. */
+	private static ArrayList<Troncal> t;
+
+	/** The ba. */
 	public static double BA = 60;
+
+	/** The lista. */
 	private static List<Cliente> lista;
 
 	/**
 	 * Instancia una nueva Ciudad.
 	 *
-	 * @param el archivo
+	 * @param archivo the archivo
 	 */
 	public Ciudad(String archivo) {
 		try {
@@ -121,7 +130,7 @@ public class Ciudad {
 	 *
 	 * @return the p max
 	 */
-	public int getpMax() {
+	public double getpMax() {
 		return pMax;
 	}
 
@@ -130,7 +139,7 @@ public class Ciudad {
 	 *
 	 * @param pMax the new p max
 	 */
-	public void setpMax(int pMax) {
+	public void setpMax(double pMax) {
 		this.pMax = pMax;
 	}
 
@@ -184,10 +193,10 @@ public class Ciudad {
 			}
 			tokens = linea.replace("#", "").split(" ");
 			if(linea.startsWith("#T")) {
-				t = new Troncal(tokens[0], Double.parseDouble(tokens[1]));
-				this.troncal.add(t);
+				t = new Troncal(tokens[0], Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2]), Double.parseDouble(tokens[3]));
+				this.troncal.add(0,t);
 			}else if(linea.startsWith("##D")) {
-				d = new Distribucion(tokens[0], Double.parseDouble(tokens[1]));
+				d = new Distribucion(tokens[0], Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2]), Double.parseDouble(tokens[3]));
 				t.addDistribucion(d);
 			}else {
 				Parcela p = new Parcela(tokens[0], Double.parseDouble(tokens[1]), Double.parseDouble(tokens[2]));
@@ -214,6 +223,11 @@ public class Ciudad {
 
 	}
 
+	/**
+	 * Cargar clientes.
+	 *
+	 * @param archivo the archivo
+	 */
 	public void cargarClientes(String archivo) {
 		lista = new ArrayList<Cliente>();
 		try {
@@ -221,7 +235,7 @@ public class Ciudad {
 			while (sc.hasNextLine()) {
 				String linea = sc.nextLine().trim();
 				if(linea.isEmpty() || linea.startsWith("//")) continue;
-				String[] tokens = linea.split(" >-");
+				String[] tokens = linea.split(" - ");
 				String nombre = tokens[0];
 				double flujo = Double.parseDouble(tokens[1]);
 				double ip = Double.parseDouble(tokens[2]);
@@ -233,75 +247,244 @@ public class Ciudad {
 		}
 	}
 
+	/**
+	 * Indice avenida.
+	 *
+	 * @param j the j
+	 * @return the int
+	 */
 	public static int indiceAvenida(int j) {
 		return (j+1)*2 + (nAvenidas%2 == 0 ? -1 : 0);
 	}
 
+	/**
+	 * Indice calle.
+	 *
+	 * @param i the i
+	 * @return the int
+	 */
 	public static int indiceCalle(int i) {
-		return nCalles - (i < 0 ? 1 : i);
+		return nCalles - (i < 0 ? 1 : i+1);
 	}
 
+	/**
+	 * Indices A nombre.
+	 *
+	 * @param i the i
+	 * @param j the j
+	 * @return the string
+	 */
 	public static String indicesANombre(int i, int j) {
 		return (i < 0 ? "T" : "D") + "-C" + indiceCalle(i) + "A" + indiceAvenida(j);
 	}
 
+	/**
+	 * Funcion presion.
+	 *
+	 * @param x the x
+	 * @param b the b
+	 * @return the double
+	 */
 	public static double funcionPresion(int x, int b) {
 		return -0.05*x + b;
 	}
 
+	/**
+	 * Funcion presion 2.
+	 *
+	 * @param i the i
+	 * @param j the j
+	 * @return the double
+	 */
 	public static double funcionPresion2(int i, int j) {
 		if(i < 0) {
 			return funcionPresion(nAvenidas - 1 -j, 150);
 		}else {
-			return funcionPresion(i+1, (int) troncal.get(i).getPresion());
+			return funcionPresion(i+1, (int) t.get(j).getPresion());
 		}
 	}
 
-	public void generarArchivo(String ruta) {
+	/**
+	 * Iniciar mapa fallos.
+	 */
+	public void iniciarMapaFallos() {
+		fallos = new TreeMap<String, TreeMap<String,Double>>();
+		fallos.put("P", new TreeMap<String, Double>());
+		fallos.put("F", new TreeMap<String, Double>());
+		fallos.put("R", new TreeMap<String, Double>());
+	}
 
-		ArrayList<Troncal> t = new ArrayList<Troncal>();
-		Map<String, TreeMap<String, Double>> mapa= new TreeMap<String, TreeMap<String, Double>>();
+	/**
+	 * Fallo presion.
+	 *
+	 * @param nombre the nombre
+	 * @param porcentaje the porcentaje
+	 */
+	public void falloPresion(String nombre, double porcentaje) {
+		if(porcentaje >= 0) {
+			fallos.get("P").put(nombre.toUpperCase(), porcentaje);
+		}
+	}
+
+	/**
+	 * Fallo flujo.
+	 *
+	 * @param nombre the nombre
+	 * @param porcentaje the porcentaje
+	 */
+	public void falloFlujo(String nombre, double porcentaje) {
+		if(porcentaje >= 0) {
+			fallos.get("Flujo").put(nombre.toUpperCase(), porcentaje);
+		}
+	}
+
+	/**
+	 * Fallo perdida.
+	 *
+	 * @param nombre the nombre
+	 * @param porcentaje the porcentaje
+	 */
+	public void falloPerdida(String nombre, double porcentaje) {
+		if(porcentaje >= 0) {
+			fallos.get("Perdidas").put(nombre.toUpperCase(), porcentaje);
+		}
+	}
+
+	/**
+	 * Generar archivo.
+	 *
+	 * @param ruta the ruta
+	 * @param nCalle the n calle
+	 * @param nAvenida the n avenida
+	 */
+	public void generarArchivo(String ruta, int nCalle, int nAvenida) {
+		nCalles = nCalle;
+		nAvenidas = nAvenida;
+		pMax = 150.0;
+
+		double pAnterior= pMax;
+		double pPrevio = pMax;
+		double pActual = pMax;
+		double caida = 0;
+		String nombre = "";
+		//Crea la linea troncal
+		t = new ArrayList<Troncal>();
 		for (int j = 0; j < nAvenidas/2; j++) {
 			t.add(new Troncal(indicesANombre(-1, j), 0));
 		}
 
+		//Rellena la linea troncal de presiones
 		for (int j = t.size() - 1; j >= 0; j--) {
-			double pAnterior = funcionPresion2(-1, j+1);
-			double caida = 0;
-			if(mapa.get("P").containsKey(indicesANombre(-1, j))) {
-				caida = mapa.get("P").get(indicesANombre(-1, j))/100;
+			pAnterior = funcionPresion2(-1, j+1);
+			pActual = funcionPresion2(-1, j);
+			pPrevio = j == nAvenidas/2-1 ? pActual : t.get(j+1).getPresion();
+			caida = 0;
+			nombre = indicesANombre(-1, j);
+			if(fallos.get("P").containsKey(nombre)) {
+				caida = fallos.get("P").get(nombre)/100;
 			}else {
-				double pActual = funcionPresion2(-1, j);
 				caida = (pAnterior - pActual) / pActual;
 			}
 
-			if(j+1 == t.size()) {
-				t.get(j).setPresion(funcionPresion(-1, j));
-			}else {
-				t.get(j).setPresion(pAnterior / (caida + 1));
-			}
+			t.get(j).setPresion(pPrevio / (caida + 1));
 		}
 
+		//Rellena las lineas de distribucion de presiones
 		for (int j = 0; j < t.size(); j++) {
 			for (int i = 0; i < nCalles-3; i++) {
-				double caida = 0;
-				double pAnterior = 0;
-				if(mapa.get("P").containsKey(indicesANombre(i, j))) {
-					caida = mapa.get("P").get(indicesANombre(i, j));
+				caida = 0;
+				pAnterior = funcionPresion2(i-1, j);
+				pActual = funcionPresion2(i, j);
+				pPrevio = i == 0 ? t.get(j).getPresion() : t.get(j).getDistribucion().get(i-1).getPresion();
+				nombre = indicesANombre(i, j);
+				if(fallos.get("P").containsKey(nombre)) {
+					caida = fallos.get("P").get(nombre);
 				}else {
-
-					if(i == 0) {
-						pAnterior = t.get(j).getPresion();
-					}else {
-						pAnterior = funcionPresion2(i-1, j);
-					}
-					double pActual = funcionPresion2(i, j);
 					caida = (pAnterior - pActual)/ pActual;
 				}
-				Distribucion d = new Distribucion(indicesANombre(i, j), pAnterior/(caida+1));
+				Distribucion d = new Distribucion(nombre, pPrevio/(caida+1));
 				t.get(j).addDistribucion(d);
+				//Agregado condicional de parcelas
+				d.addParcela(generarParcela((indiceCalle(i)-1), indiceAvenida(j), fallos));
+				if(j!=0 || nAvenidas%2==1) {
+					d.addParcela(generarParcela((indiceCalle(i)-1), indiceAvenida(j)-1, fallos));
+				}
+				if(i == nCalles-4) {
+					d.addParcela(generarParcela((indiceCalle(i)-2), indiceAvenida(j), fallos));
+					if(j!=0 || nAvenidas%2==1) {
+						d.addParcela(generarParcela((indiceCalle(i)-2), indiceAvenida(j)-1, fallos));
+					}
+				}
+				if(i==0 && j!=t.size()-1) {
+					d.addParcela(generarParcela((indiceCalle(i)), indiceAvenida(j), fallos));
+				}
+
+				if(i==0 && (j!=0 || nAvenidas%2==1)) {
+					d.addParcela(generarParcela((indiceCalle(i)), indiceAvenida(j)-1, fallos));
+				}
+
 			}
 		}
+
+		//Sumar flujos de las lineas de distribucion
+		for (int j = 0; j < t.size(); j++) {
+			for (int i = t.get(j).getDistribucion().size()-2; i >= 0; i--) {
+				t.get(j).getDistribucion().get(i).sumarFlujo(t.get(j).getDistribucion().get(i+1), fallos);
+			}
+			t.get(j).sumarFlujo(t.get(j).getDistribucion().get(0), fallos);
+		}
+
+		//Sumar flujos de la linea troncal
+		for (int j = 1; j < t.size(); j++) {
+			t.get(j).sumarFlujo(t.get(j-1), fallos);
+		}
+
+		//Guardado en archivo
+		try {
+			PrintWriter pw = new PrintWriter(new File(ruta));
+			pw.println("%Linea de comentarios.");
+			pw.println("@Calles: "+nCalles);
+			pw.println("@Avenidas: "+nAvenidas);
+			pw.println();
+			for (int j = t.size()-1; j >= 0; j--) {
+				Troncal tr = t.get(j);
+				pw.println("#"+tr.getNombre()+" "+tr.getPresion()+" "+tr.getFlujo()+" "+tr.getMedia());
+				ArrayList<Distribucion> dr = tr.getDistribucion();
+				for (Distribucion d : dr) {
+					pw.println("##"+d.getNombre()+" "+d.getPresion()+" "+d.getFlujo()+" "+d.getMedia());
+					ArrayList<Parcela> pr = d.getParcelas();
+					for (Parcela p : pr) {
+						pw.println("###"+p.getNombre()+" "+p.getFlujo()+" "+p.getMedia());
+					}
+				}
+			}
+
+			pw.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Generar parcela.
+	 *
+	 * @param calle the calle
+	 * @param avenida the avenida
+	 * @param fallos the fallos
+	 * @return the parcela
+	 */
+	private Parcela generarParcela(int calle, int avenida, Map<String, TreeMap<String, Double>> fallos) {
+		String nombre = "P-C"+calle+"A"+avenida;
+		double media = 100+Math.random()*3000;
+		double flujo = 0;
+		if(fallos.get("F").containsKey(nombre)){
+			flujo = (1+fallos.get("F").get(nombre)/100.0) * media;
+		}else {
+			flujo = (1+ (Math.random()>0.5 ? 1 : -1)*(Math.random()*50/100.0)) * media;
+		}
+		Parcela p = new Parcela(nombre, flujo, media);
+		return p;
 	}
 
 	//ALGORITMOS
@@ -320,7 +503,7 @@ public class Ciudad {
 	/**
 	 * Divide Y venceras presiones Troncal.
 	 *
-	 * @param lista the lista
+	 * @param pos the pos
 	 * @param inicio the inicio
 	 * @param fin the fin
 	 */
@@ -347,6 +530,13 @@ public class Ciudad {
 	}
 
 
+		/**
+		 * Verificar presion.
+		 *
+		 * @param d1 the d 1
+		 * @param d2 the d 2
+		 * @return the double
+		 */
 		private double verificarPresion(Dispositivo d1, Dispositivo d2) {
 			return Math.abs((d1.getPresion() - d2.getPresion())/d2.getPresion());
 
@@ -366,7 +556,7 @@ public class Ciudad {
 	/**
 	 * Divide Y venceras flujos.
 	 *
-	 * @param d the d
+	 * @param pos the pos
 	 * @param inicio the inicio
 	 * @param fin the fin
 	 */
@@ -384,6 +574,12 @@ public class Ciudad {
 
 	}
 
+	/**
+	 * Analizar consumidores.
+	 *
+	 * @param posH the pos H
+	 * @param posV the pos V
+	 */
 	private void analizarConsumidores(int posH, int posV) {
 		for(Parcela p : troncal.get(posH).getDistribucion().get(posV).getParcelas()) {
 			if(verificarFlujo(p) >= 7.0) {
@@ -393,10 +589,19 @@ public class Ciudad {
 
 	}
 
+	/**
+	 * Verificar flujo.
+	 *
+	 * @param p the p
+	 * @return the double
+	 */
 	private double verificarFlujo(Parcela p) {
 		return Math.abs((p.getFlujo() - p.getMedia()) / p.getMedia());
 	}
 
+	/**
+	 * Greedy presion.
+	 */
 	public void greedyPresion() {
 		greedyPresiones(-1, 0, troncal.size() - 1);
 		for (int i = 0; i < troncal.size(); i++) {
@@ -404,6 +609,13 @@ public class Ciudad {
 		}
 	}
 
+	/**
+	 * Greedy presiones.
+	 *
+	 * @param pos the pos
+	 * @param inicio the inicio
+	 * @param fin the fin
+	 */
 	private void greedyPresiones(int pos, int inicio, int fin) {
 		int x = pos == -1 ? 0 : troncal.get(pos).getDistribucion().size() - 1;
 		int inicioH = pos == -1 ? troncal.size() - 1 : pos;
@@ -428,12 +640,20 @@ public class Ciudad {
 		}
 	}
 
+	/**
+	 * Greedy flujos.
+	 */
 	public void greedyFlujos() {
 		for (int i = 0; i < troncal.size(); i++) {
 			GreedyFlujo(i);
 		}
 	}
 
+	/**
+	 * Greedy flujo.
+	 *
+	 * @param pos the pos
+	 */
 	private void GreedyFlujo(int pos) {
 		LinkedList<Parcela> aux = new LinkedList<Parcela>();
 		for (int i = 0; i < troncal.get(pos).getDistribucion().size(); i++) {
@@ -452,6 +672,9 @@ public class Ciudad {
 		}
 	}
 
+	/**
+	 * Greedy perdidas.
+	 */
 	public void greedyPerdidas() {
 		greedyPerdidas(-1);
 		for (int i = 0; i < troncal.size(); i++) {
@@ -459,33 +682,53 @@ public class Ciudad {
 		}
 	}
 
+	/**
+	 * Greedy perdidas.
+	 *
+	 * @param pos the pos
+	 */
 	private void greedyPerdidas(int pos) {
-		int n = pos == -1 ? troncal.size() : troncal.get(pos).getDistribucion().size();
+		int n = pos == -1 ? troncal.size() : troncal.get(pos).getDistribucion().size() ;
 		for (int i = 0; i < n; i++) {
 			double parcelas = sumarFlujos(pos, i);
 			double siguiente = pos == -1 ?
-					(i-1 < 0 ? 0 : troncal.get(i-1).getDistribucion().get(0).getFlujo()):
+					 (i-1 < 0 ? 0 : troncal.get(i-1).getDistribucion().get(0).getFlujo()) :
 						(i+1 == troncal.get(pos).getDistribucion().size() ? 0 : troncal.get(pos).getDistribucion().get(i+1).getFlujo());
 			double miFlujo = pos == -1 ? troncal.get(i).getDistribucion().get(0).getFlujo() : troncal.get(pos).getDistribucion().get(i).getFlujo();
 
 			if(variacionFlujo(miFlujo, parcelas, siguiente) >= 5.0) {
 				if(pos == -1) {
-					System.out.println(troncal.get(i).getDistribucion().get(0).getNombre());
+					System.out.println(troncal.get(i).getDistribucion().get(0).getNombre() + " - " + (i-1 < 0 ? "" : troncal.get(i-1).getDistribucion().get(0))
+							+ " ó " + troncal.get(i).getDistribucion().get(0).getNombre() + " - " + troncal.get(i).getDistribucion().get(1).getNombre());
 				}else {
-					System.out.println(troncal.get(pos).getDistribucion().get(i).getNombre()
-							+ " - "+ troncal.get(pos).getDistribucion().get(i+1).getNombre()
-							+ " - > " + variacionFlujo(miFlujo, parcelas, siguiente)*100);
+					System.out.println(troncal.get(pos).getDistribucion().get(i).getNombre() + " - " + (i+1 == troncal.get(pos).getDistribucion().size() ? "	" : troncal.get(pos).getDistribucion().get(i+1).getNombre()));
+
 				}
 			}
 		}
 
 	}
 
+	/**
+	 * Variacion flujo.
+	 *
+	 * @param miFlujo the mi flujo
+	 * @param parcelas the parcelas
+	 * @param siguiente the siguiente
+	 * @return the double
+	 */
 	private double variacionFlujo(double miFlujo, double parcelas, double siguiente) {
 
 		return Math.abs((miFlujo - parcelas - siguiente) / siguiente);
 	}
 
+	/**
+	 * Sumar flujos.
+	 *
+	 * @param posH the pos H
+	 * @param posV the pos V
+	 * @return the double
+	 */
 	private double sumarFlujos(int posH, int posV) {
 		if(posH == -1) return 0;
 		double suma = 0;
@@ -495,6 +738,11 @@ public class Ciudad {
 		return suma;
 	}
 
+	/**
+	 * Prog dinamica WTT.
+	 *
+	 * @param WTT the wtt
+	 */
 	public void progDinamicaWTT(int WTT) {
 		lista.sort(new OrdenarCliente(false));
 		int mcd = mcd(WTT, false);
@@ -519,6 +767,13 @@ public class Ciudad {
 		}
 	}
 
+	/**
+	 * Mcd.
+	 *
+	 * @param peso the peso
+	 * @param tipoPeso the tipo peso
+	 * @return the int
+	 */
 	private static int mcd(int peso, boolean tipoPeso) {
 		int x = mcd(peso, tipoPeso ? lista.get(0).getOp() : lista.get(0).getAt());
 		for (int i = 1; i < lista.size() && x != 1; i++) {
@@ -527,6 +782,13 @@ public class Ciudad {
 		return x;
 	}
 
+	/**
+	 * Mcd.
+	 *
+	 * @param a the a
+	 * @param b the b
+	 * @return the int
+	 */
 	private static int mcd(int a, int b) {
 	    while (b != 0) {
 	        int temporal = b;
@@ -536,6 +798,11 @@ public class Ciudad {
 	    return a;
 	}
 
+	/**
+	 * Prog dinamica MI.
+	 *
+	 * @param MI the mi
+	 */
 	public void progDinamicaMI(int MI) {
 		lista.sort(new OrdenarCliente(true));
 		int nuevaMochila = sumarPeso(lista) - MI;
@@ -567,6 +834,12 @@ public class Ciudad {
 		}
 	}
 
+	/**
+	 * Sumar peso.
+	 *
+	 * @param lista the lista
+	 * @return the int
+	 */
 	private int sumarPeso(List<Cliente> lista) {
 		int suma = 0;
 		for(Cliente c : lista) {
@@ -587,6 +860,7 @@ public class Ciudad {
 				System.out.println(d);
 				for(Parcela p : d.getParcelas()) {
 				System.out.println(p);
+
 				}
 			}
 		}
